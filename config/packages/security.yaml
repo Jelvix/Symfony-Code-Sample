@@ -1,0 +1,45 @@
+security:
+  encoders:
+    App\Entity\User:
+      algorithm: bcrypt
+
+  # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+  providers:
+    # used to reload user from session & other features (e.g. switch_user)
+    app_user_provider:
+      id: App\Security\UserProvider
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+    main:
+      anonymous: true
+      stateless: true
+      access_denied_handler: App\Security\AccessDeniedHandler
+      guard:
+        authenticators:
+        - App\Security\UsernameAndPasswordAuthenticator
+        - App\Security\JwtAuthenticator
+        - App\Security\JwtRefreshTokenAuthenticator
+        - App\Security\AnonimousAuthenticator
+        entry_point: App\Security\UsernameAndPasswordAuthenticator
+
+      # activate different ways to authenticate
+
+      # http_basic: true
+      # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
+
+      # form_login: true
+      # https://symfony.com/doc/current/security/form_login_setup.html
+
+  role_hierarchy:
+    roles:
+      ROLE_SUPPORT: ROLE_USER
+      ROLE_ADMIN:  ROLE_SUPPORT
+      ROLE_SUPER_ADMIN: ROLE_ADMIN
+
+  # Easy way to control access for large sections of your site
+  # Note: Only the *first* access control that matches will be used
+  access_control:
+  # - { path: ^/admin, roles: ROLE_ADMIN }
+  # - { path: ^/profile, roles: ROLE_USER }

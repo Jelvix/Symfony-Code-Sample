@@ -1,0 +1,22 @@
+monolog:
+  handlers:
+    security:
+      level: debug
+      type: stream
+      path: '%kernel.logs_dir%/security.log'
+      channels: [security]
+    php:
+      level: debug
+      type: stream
+      path: '%kernel.logs_dir%/php.log'
+      channels: [php]
+    console:
+      level: debug
+      type: stream
+      path: '%kernel.logs_dir%/console.log'
+      channels: [console]
+    doctrine:
+      level: debug
+      type: stream
+      path: '%kernel.logs_dir%/doctrine.log'
+      channels: [doctrine]

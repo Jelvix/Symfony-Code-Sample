@@ -1,0 +1,25 @@
+jms_serializer:
+  visitors:
+    xml_serialization:
+      format_output: '%kernel.debug%'
+  default_context:
+    serialization:
+      serialize_null: true
+    deserialization:
+      serialize_null: true
+services:
+  user_handler:
+    class: App\Serializer\EventSubscriber\UserSubscriber
+    tags: ['jms_serializer.event_subscriber']
+  camel_case_to_snake_case_name_normalizer:
+    class: App\Serializer\EventSubscriber\NormalizeFieldNamingSubscriber
+    tags: ['jms_serializer.event_subscriber']
+#    metadata:
+#        auto_detection: false
+#        directories:
+#            any-name:
+#                namespace_prefix: "My\\FooBundle"
+#                path: "@MyFooBundle/Resources/config/serializer"
+#            another-name:
+#                namespace_prefix: "My\\BarBundle"
+#                path: "@MyBarBundle/Resources/config/serializer"

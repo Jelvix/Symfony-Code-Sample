@@ -1,0 +1,79 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+  jwt_private_key_path: '%kernel.project_dir%/cfg/jwt_private_key.pem'
+  jwt_public_key_path: '%kernel.project_dir%/cfg/jwt_public_key.pem'
+  jwt_key_pass_phrase: ''
+  jwt_token_ttl: 7200
+  jwt_refresh_token_ttl: 36000
+
+  webpanel_root_path: '%kernel.project_dir%/webpanel/'
+  webpanel_deploy_url: '/webpanel/dist/'
+
+  app_services:
+    retry_policy:
+      number_of_retries: 3
+      delay: 3
+    generated_classes_path: '%kernel.cache_dir%/app/Api/Services/Generated'
+    App\Api\Services\Contracts\TestServiceInterface:
+      name: suite
+      settings:
+        access_token: 7pGg6QQf8k3znTdmwAaJ4CTnYB3JPqrW
+        base_url: '%env(resolve:SERVICES_URL)%'
+
+  app_acl_cache_ttl: 84600
+
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  # makes classes in src/ available to be used as services
+  # this creates a service per class whose id is the fully-qualified class name
+  App\:
+    resource: '../src/*'
+    exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+  # controllers are imported separately to make sure services can be injected
+  # as action arguments even if you don't extend any base controller class
+  App\Controller\:
+    resource: '../src/Controller'
+    tags: ['controller.service_arguments']
+
+  # add more service definitions when explicit configuration is needed
+  # please note that last definitions always *replace* previous ones
+  date_field_normalizer:
+    class: Symfony\Component\Serializer\Normalizer\DateTimeNormalizer
+    public: false
+    tags: [serializer.normalizer]
+
+  App\Security\OAth2TokenServiceInterface:
+    class: App\Security\JwtService
+    public: true
+
+  App\Security\Voter\ApiAccessVoter:
+    public: false
+    tags: [security.voter]
+
+  App\Security\PermissionsProviderInterface:
+    public: false
+    class: App\Security\AclPermissionsProvider
+
+  App\ServiceFactory\RedisFileSystemFactory: ~
+
+  League\Flysystem\FilesystemInterface:
+    public: false
+    factory: 'App\ServiceFactory\FileSystemFactory:createFileSystem'
+
+  GuzzleHttp\ClientInterface:
+    public: true
+    factory: 'App\ServiceFactory\GuzzleHttpClientFactory:createClient'
+
+  app.command.webpanel_build:
+    class: App\Command\WebpanelBuildCommand
+    arguments: ['@Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface']
+    tags: ['console.command']
